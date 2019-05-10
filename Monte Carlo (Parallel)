@@ -1,0 +1,92 @@
+import random
+import Node as nd
+import Environment
+import time
+from multiprocessing import Pool, Process, Queue
+import matplotlib.pyplot as plt
+
+epsilon = 1
+gamma = 0.999
+total_nodes = 1
+epsilon_min = 0.1
+EPISODES = 1000
+running = True
+memory = []
+env = Environment.Env()
+cores = 4
+env.x = 3
+env.y = 3
+total_score = 0
+max = 0
+runs = 256
+max_choices = env.x*env.y
+next_state = env.reset()
+
+def run_multi_carlo(action):
+    test_env = Environment.Env()
+    test_env.x = env.x
+    test_env.y = env.y
+    score = 0
+    for i in range(int(runs/4)):
+        test_env.box = action[1].copy()
+        #print(str(action[0])+" "+str(test_env.box))
+        score += test_env.run_monte_carlo(action[0])
+    return score
+
+def explore():
+    s = env.box.copy()
+    args = [[0,s],[1,s],[2,s],[3,s]]
+    scores = p.map(run_multi_carlo, args)
+    #print(scores)
+    maxscore = -1
+    bestAction = 0
+    i = 0
+    for score in scores:
+        if score > maxscore:
+            bestAction = i
+            maxscore = score
+        i+=1
+    return bestAction
+
+
+def back_propogate(states,score):
+    for state in states:
+        state.append(score)
+
+if __name__ == '__main__':
+    p = Pool(4)
+    scores = []
+    for e in range(EPISODES):
+        i = 0
+        epsilon*=gamma
+        if epsilon < epsilon_min:
+            epsilon = epsilon_min
+        states = []
+        next_state = env.reset().copy()
+
+        t0 = time.time()
+        while running:
+            i+=1
+            action = explore()
+            #action = random.randint(0,3)
+            states.append([next_state,action])
+            next_state, reward, done = env.step(action)
+            if done:
+                total_score += i
+                scores.append(i)
+                back_propogate(states,i)
+                if i == max:
+                   print("reached current max")
+                t1 = time.time()
+                #print(t1 - t0)
+                print("Score: " + str(i) + " Episode: " + str(e))
+                if i > max:
+                    max = i
+                    #print("Score: "+str(max)+" Episode: "+str(e))
+                i = 0
+                break
+            response = 0
+    plt.plot(scores, 'ro')
+    plt.show()
+    print(total_score/EPISODES)
+    print(max)
