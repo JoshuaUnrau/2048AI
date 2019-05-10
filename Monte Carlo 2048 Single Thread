@@ -1,0 +1,90 @@
+import random
+import Node as nd
+import Environment
+import time
+from multiprocessing import Pool, Process, Queue
+
+
+epsilon = 1
+gamma = 0.999
+total_nodes = 1
+epsilon_min = 0.1
+EPISODES = 100
+running = True
+memory = []
+env = Environment.Env()
+carlo_env = Environment.Env()
+cores = 4
+env.x = 3
+env.y = 3
+carlo_env.x = env.x
+carlo_env.y = env.y
+total_score = 0
+max = 0
+max_choices = env.x*env.y
+
+def explore(runs,state):
+    j = 0
+    action = 0
+    scores = [0,0,0,0]
+    for i in range(runs):
+        carlo_env.box = state.copy()
+        if j == runs/4:
+            action+=1
+            j = 0
+        scores[action] += carlo_env.run_monte_carlo(action)
+        j+=1
+    print(scores)
+    maxscore = -1
+    bestAction = 0
+    i = 0
+    for score in scores:
+        if score > maxscore:
+            bestAction = i
+            maxscore = score
+        i+=1
+    #print(bestAction)
+    #print(state)
+    return bestAction
+
+
+def back_propogate(states,score):
+    for state in states:
+        state.append(score)
+#FIXME
+#Basically random at this point
+#Game env currently does not end when all tiles filed and a invalid action is taken
+#Implement A/B pruning, minimax, neural network
+if __name__ == '__main__':
+    p = Pool(4)
+    for e in range(EPISODES):
+        i = 0
+        epsilon*=gamma
+        if epsilon < epsilon_min:
+            epsilon = epsilon_min
+        states = []
+        next_state = env.reset()
+
+        t0 = time.time()
+        while running:
+            i+=1
+            action = explore(256,next_state)
+            #action = random.randint(0,3)
+            states.append([next_state,action])
+            next_state, reward, done = env.step(action)
+            if done:
+                total_score += i
+                back_propogate(states,i)
+                if i == max:
+                   print("reached current max")
+                t1 = time.time()
+                print(t1 - t0)
+                print("Score: " + str(i) + " Episode: " + str(e))
+                if i > max:
+                    max = i
+                    #print("Score: "+str(max)+" Episode: "+str(e))
+                i = 0
+                break
+            response = 0
+    print(total_score/EPISODES)
+    print(max)
