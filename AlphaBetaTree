@@ -1,0 +1,113 @@
+import random
+
+import Environment
+
+epsilon = 1
+class Tree:
+   def __init__ (self):
+       self.root_node = Node()
+
+def max_node(root_node):
+    max = -1
+    max_node = None
+    for node in root_node.branches:
+        if node.score > max:
+            max = node.score
+            max_node = node
+    return max_node
+
+class Node:
+    def __init__(self):
+        self.branches = []
+        self.state = None
+        self.action = None
+        self.parent_node = None
+        self.score = 0
+        self.familiarity = 0
+
+    def add_node(self,new_node):
+        print("Node")
+        print(new_node.state)
+        for node in self.branches:
+            print("Saved node")
+            print(node.state)
+            if node.state == new_node.state:
+                #print("not appended")
+                return node
+        new_node.parent_node = self
+        self.branches.append(new_node)
+        #print("appended")
+        return new_node
+
+    def back_propogate(self,score):
+        if score > self.score:
+            self.score = score
+        if self.parent_node != None:
+            self.parent_node.back_propogate(score)
+
+    def best_choice(self):
+        length = len(self.branches)
+        if length == 0:
+            return random.randint(0,3)
+        node = max_node(self)
+        return node.action
+
+def follow_max(root_node):
+    if len(root_node.branches) == 0:
+        print("Done")
+        return
+    node = max_node(root_node)
+    follow_max(node)
+def action_response(action,response):
+    action*4+response
+
+gamma = 0.999
+total_nodes = 1
+epsilon_min = 0.1
+EPISODES = 10000
+running = True
+tree = Tree()
+env = Environment.Env()
+env.x = 3
+env.y = 3
+tree.root_node.state = env.reset()
+total_score = 0
+max = 0
+max_choices = env.x*env.y
+#Basically random at this point WTF???
+for e in range(EPISODES):
+    i = 0
+    upper_node = tree.root_node
+    env.reset()
+    epsilon*=gamma
+    if epsilon < epsilon_min:
+        epsilon = epsilon_min
+    #print("E: "+str(epsilon))
+    while running:
+        i+=1
+        action = upper_node.best_choice()
+        #action = random.randint(0,3)
+        next_state, reward, done = env.step(action)
+        if done:
+            total_score += i
+            #print("Score: "+str(i))
+            upper_node.back_propogate(i)
+            if i == max:
+                print("reached max")
+            if i > max:
+                max = i
+                print("Score: "+str(max)+" Episode: "+str(e))
+            i = 0
+            break
+        response = 0
+        node = Node()
+        node.state = next_state
+        node.action = action
+        upper_node = upper_node.add_node(node)
+        if upper_node == node:
+            total_nodes+=1
+#print
+print(total_nodes)
+print(total_score/EPISODES)
+follow_max(tree.root_node)
+print(max)
