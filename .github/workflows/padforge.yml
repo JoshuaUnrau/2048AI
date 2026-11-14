@@ -37,7 +37,7 @@ jobs:
 
   ios:
     name: iPhone app (simulator build)
-    runs-on: macos-14
+    runs-on: macos-latest
     defaults: { run: { working-directory: padforge/native/ios } }
     steps:
       - uses: actions/checkout@v4

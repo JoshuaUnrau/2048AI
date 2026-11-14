@@ -23,6 +23,15 @@ Turn your phone into a custom game controller for **Steam on Windows** and **Ste
 
 The bridge serves the phone app itself, so there's nothing to install on the phone. Scan the QR code the bridge prints and play. On iPhone, use **Share → Add to Home Screen** for full screen.
 
+## Phone apps
+
+Use the [Android and iPhone apps](docs/PHONE_APPS.md) to get:
+- volume buttons as controller inputs (for example light and heavy guns in War Thunder);
+- native motion sensors with no certificate warning;
+- vibration on iPhone.
+
+The browser version needs no install.
+
 ## Quick start
 
 See **[docs/STEAM.md](docs/STEAM.md)** for step-by-step setup:
@@ -70,7 +79,7 @@ node test/e2e.js     # drives the phone app in an emulated phone with real multi
   - uinput on a Steam Deck.
   - Real phone gyros.
 - iPhone browsers can't vibrate, so haptics are Android-only until there's a native app wrapper.
-- Phone volume buttons can be bound in a layout, but browsers keep them for volume. They will work in the native app.
+- Phone volume buttons only work in the [Android and iPhone apps](docs/PHONE_APPS.md). Browsers keep them for volume.
 - Auto layout switching uses the focused window. It works on Windows and on Linux desktops with `xdotool`, but not in Steam Deck Game Mode.
 - Planned:
   - Native app (Capacitor) for iOS haptics, Bluetooth and on-device voice commands.

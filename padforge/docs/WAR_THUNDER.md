@@ -19,7 +19,7 @@ Hold the phone sideways like a yoke:
 
 The layout switches on automatically when War Thunder (`aces.exe`) is focused on Windows.
 
-> **Volume buttons:** browsers keep the volume keys for themselves, so in the current web version use the **MG** and **Cannon** buttons. The layout is already set up for the volume keys, and they'll work once PadForge is a native app. Native support on Android is straightforward; on iPhone it relies on a workaround.
+> **Volume buttons:** use the PadForge [Android or iPhone app](PHONE_APPS.md). There, volume up fires the machine guns and volume down fires the cannons. In a phone browser the volume keys can't be captured, so use the **MG** and **Cannon** buttons instead.
 
 ## One-time setup in War Thunder
 
