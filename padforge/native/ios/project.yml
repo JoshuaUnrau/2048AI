@@ -1,0 +1,41 @@
+# Generate the Xcode project with XcodeGen:  brew install xcodegen && xcodegen
+name: PadForge
+options:
+  bundleIdPrefix: app.padforge
+  deploymentTarget:
+    iOS: "15.0"
+targets:
+  PadForge:
+    type: application
+    platform: iOS
+    sources:
+      - path: PadForge
+      - path: ../shared/setup.html
+        buildPhase: resources
+    info:
+      path: PadForge/Info.plist
+      properties:
+        CFBundleDisplayName: PadForge
+        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "1"
+        UILaunchScreen: {}
+        UIRequiresFullScreen: true
+        UIStatusBarHidden: true
+        UIViewControllerBasedStatusBarAppearance: true
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        NSLocalNetworkUsageDescription: PadForge connects to the PadForge bridge running on your PC or Steam Deck.
+        NSMotionUsageDescription: Motion controls let you aim and fly by tilting your phone.
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+          NSAllowsArbitraryLoadsInWebContent: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.padforge.PadForge
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SWIFT_VERSION: "5.0"
+        CODE_SIGN_STYLE: Automatic

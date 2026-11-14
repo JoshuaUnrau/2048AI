@@ -5,7 +5,7 @@ const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform ==
 
 export class Gyro {
   constructor() {
-    this.supported = 'DeviceMotionEvent' in window;
+    this.supported = 'DeviceMotionEvent' in window || !!window.__pfNative;
     this.running = false;
     this.accX = 0; // accumulated look degrees since last read
     this.accY = 0;
@@ -21,11 +21,16 @@ export class Gyro {
     this.tiltRaw = null; // { roll, pitch } degrees, before centring
     this.neutral = null;
     this.yaw = 0; // degrees (spring mode) or deg/s (rate mode)
-    this._onMotion = (e) => this._motion(e);
+    // The PadForge phone apps read the sensors natively and send "pf-devicemotion"
+    // events (same shape as the browser's). Once those arrive, browser events are ignored.
+    this.native = false;
+    this._onMotion = (e) => { if (!this.native) this._motion(e); };
+    this._onNative = (e) => { this.native = true; this._motion(e); };
   }
 
   // iOS needs this to be called from a tap.
   async requestPermission() {
+    if (window.__pfNative) return true; // the app has its own sensor access
     if (!this.supported) return false;
     if (typeof DeviceMotionEvent.requestPermission === 'function') {
       try { return (await DeviceMotionEvent.requestPermission()) === 'granted'; } catch { return false; }
@@ -34,13 +39,15 @@ export class Gyro {
   }
 
   start() {
-    if (this.running || !this.supported) return;
+    if (this.running) return;
     window.addEventListener('devicemotion', this._onMotion);
+    window.addEventListener('pf-devicemotion', this._onNative);
     this.running = true;
   }
 
   stop() {
     window.removeEventListener('devicemotion', this._onMotion);
+    window.removeEventListener('pf-devicemotion', this._onNative);
     this.running = false;
   }
 

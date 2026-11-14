@@ -178,7 +178,10 @@ $('#btn-edit').addEventListener('click', () => {
   editor.start(current, engine.screenId);
   renderTabs();
 });
+// Inside the PadForge phone app, the corner button goes back to the app's connection screen.
+if (window.PadForgeNative) { $('#btn-full').textContent = '⚙'; $('#btn-full').title = 'Connection settings'; }
 $('#btn-full').addEventListener('click', () => {
+  if (window.PadForgeNative && window.PadForgeNative.setup) { window.PadForgeNative.setup(); return; }
   if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen?.().catch(() => toast('On iPhone: Share → Add to Home Screen for full screen'));
 });
 

@@ -294,7 +294,7 @@ export class Editor {
         this._field({ key: 'showTabs', type: 'check', label: 'Show screen tabs at the top' }, d.settings)),
       h('div', { class: 'section' },
         h('h4', {}, 'Phone buttons'),
-        h('p', { class: 'hint' }, 'Volume buttons only reach the controller in the PadForge app (coming soon) or browsers that allow it; phone browsers normally keep them for volume.'),
+        h('p', { class: 'hint' }, 'Volume buttons work in the PadForge Android and iPhone apps. Phone browsers keep them for volume.'),
         this._field({ key: 'volumeUp', type: 'bind', label: 'Volume up', optional: true }, d.settings),
         this._field({ key: 'volumeDown', type: 'bind', label: 'Volume down', optional: true }, d.settings)),
       h('div', { class: 'section' },

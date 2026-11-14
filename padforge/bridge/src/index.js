@@ -74,10 +74,11 @@ async function main() {
   }
   await bridge.listen({ port: args.port, httpsPort: tls ? args.httpsPort : 0, tls });
 
+  const ips = lanAddresses();
   const d = output.describe();
   console.log(`\nPadForge bridge running. Output: ${d.controller}${d.kbm ? ' + keyboard/mouse' : ''}`);
-  console.log(`Pairing code: ${token}\n`);
-  const ips = lanAddresses();
+  console.log(`Pairing code: ${token}`);
+  if (ips[0]) console.log(`PadForge phone app: address ${ips[0]}${args.port === 8080 ? '' : ':' + args.port}  code ${token}\n`);
   const urls = ips.map((ip) => (tls ? `https://${ip}:${args.httpsPort}` : `http://${ip}:${args.port}`) + `/#k=${token}`);
   for (const u of urls) console.log('  Open on your phone:', u);
   if (tls) console.log('  (No gyro needed? Plain HTTP also works:', ips.map((ip) => `http://${ip}:${args.port}`).join(', ') + ')');

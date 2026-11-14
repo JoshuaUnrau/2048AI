@@ -1,0 +1,49 @@
+name: PadForge
+
+on:
+  push:
+    paths: ["padforge/**", ".github/workflows/padforge.yml"]
+  pull_request:
+    paths: ["padforge/**", ".github/workflows/padforge.yml"]
+  workflow_dispatch:
+
+jobs:
+  bridge:
+    name: Bridge tests
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: padforge/bridge } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm ci
+      - run: npm test
+
+  android:
+    name: Android app (APK)
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: padforge/native/android } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17 }
+      - uses: gradle/actions/setup-gradle@v4
+        with: { gradle-version: "8.7" }
+      - run: gradle --no-daemon assembleRelease
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PadForge-android
+          path: padforge/native/android/app/build/outputs/apk/release/app-release.apk
+
+  ios:
+    name: iPhone app (simulator build)
+    runs-on: macos-14
+    defaults: { run: { working-directory: padforge/native/ios } }
+    steps:
+      - uses: actions/checkout@v4
+      - run: brew install xcodegen
+      - run: xcodegen generate
+      - run: >
+          xcodebuild -project PadForge.xcodeproj -scheme PadForge -configuration Debug
+          -sdk iphonesimulator -destination 'generic/platform=iOS Simulator'
+          CODE_SIGNING_ALLOWED=NO build

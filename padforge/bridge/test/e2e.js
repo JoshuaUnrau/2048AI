@@ -270,6 +270,31 @@ async function main() {
       await until(() => Math.abs(pad().rx) < 0.05, 'rudder recentres');
     });
 
+    await step('phone app sensors ("pf-devicemotion") drive the flight stick and override browser sensors', async () => {
+      const rad = Math.PI / 180;
+      const send = (type, g, n = 30) => page.evaluate(([type, g, n]) => {
+        for (let i = 0; i < n; i++) {
+          window.dispatchEvent(Object.assign(new Event(type), {
+            rotationRate: { alpha: 0, beta: 0, gamma: 0 },
+            accelerationIncludingGravity: { x: g[0] * 9.81, y: g[1] * 9.81, z: g[2] * 9.81 }, interval: 16,
+          }));
+        }
+      }, [type, g, n]);
+      const level = [Math.cos(40 * rad), 0, Math.sin(40 * rad)];
+      const rollLeft = [Math.cos(40 * rad) * Math.cos(20 * rad), -Math.sin(20 * rad), Math.sin(40 * rad) * Math.cos(20 * rad)];
+      await send('pf-devicemotion', level);
+      const c = await center('Centre');
+      await touch.tap(c.x, c.y);
+      await send('pf-devicemotion', rollLeft);
+      await until(() => pad().lx < -0.3, 'native roll left');
+      // Browser events are now ignored, even if they disagree.
+      await send('devicemotion', level, 60);
+      await sleep(100);
+      assert.ok(pad().lx < -0.3, 'browser sensor events ignored once the app supplies motion');
+      await send('pf-devicemotion', level);
+      await until(() => Math.abs(pad().lx) < 0.05, 'level again');
+    });
+
     await step('War Thunder: volume up = light guns, volume down = heavy guns', async () => {
       const key = (type, k) => page.evaluate(([type, k]) => window.dispatchEvent(new KeyboardEvent(type, { key: k })), [type, k]);
       await key('keydown', 'AudioVolumeUp');
