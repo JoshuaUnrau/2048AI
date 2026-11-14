@@ -2,7 +2,7 @@
 'use strict';
 // PadForge bridge CLI.
 //   node src/index.js [--output auto|x360|ds4|uinput|log] [--port 8080] [--https-port 8443]
-//                     [--token CODE] [--no-https] [--verbose]
+//                     [--token CODE] [--host ADDR] [--no-https] [--verbose]
 const os = require('os');
 const fs = require('fs');
 const path = require('path');
@@ -20,6 +20,7 @@ function parseArgs(argv) {
     else if (k === '--https-port') a.httpsPort = +next();
     else if (k === '--no-https') a.https = false;
     else if (k === '--token') a.token = next();
+    else if (k === '--host') a.host = next();
     else if (k === '--verbose' || k === '-v') a.verbose = true;
     else if (k === '--help' || k === '-h') {
       console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(2, 5).join('\n').replace(/\/\/ ?/g, ''));
@@ -28,6 +29,9 @@ function parseArgs(argv) {
   }
   return a;
 }
+
+// Tailscale hands out addresses in 100.64.0.0/10.
+const isTailnet = (ip) => { const [a, b] = ip.split('.').map(Number); return a === 100 && b >= 64 && b < 128; };
 
 function lanAddresses() {
   const out = [];
@@ -72,9 +76,15 @@ async function main() {
   if (args.https) {
     try { tls = loadTls(); } catch (err) { console.warn('[bridge] HTTPS disabled:', err.message); }
   }
-  await bridge.listen({ port: args.port, httpsPort: tls ? args.httpsPort : 0, tls });
+  // Listen only on the Tailscale address when there is one: the bridge drives
+  // this PC's keyboard and mouse, so it should not be open to the whole LAN.
+  // "--host 0.0.0.0" opts back into every interface (e.g. no Tailscale on the phone).
+  const all = lanAddresses();
+  const host = args.host || all.find(isTailnet) || '0.0.0.0';
+  if (host === '0.0.0.0') console.warn('[bridge] listening on every network interface (no Tailscale address found, or --host 0.0.0.0)');
+  await bridge.listen({ port: args.port, httpsPort: tls ? args.httpsPort : 0, tls, host });
 
-  const ips = lanAddresses();
+  const ips = host === '0.0.0.0' ? all : [host];
   const d = output.describe();
   console.log(`\nPadForge bridge running. Output: ${d.controller}${d.kbm ? ' + keyboard/mouse' : ''}`);
   console.log(`Pairing code: ${token}`);

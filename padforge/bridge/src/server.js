@@ -20,6 +20,8 @@ const MIME = {
 const MAX_PLAYERS = 8;
 const STALE_MS = 1000; // release everything if a phone goes quiet this long
 const RECONNECT_GRACE_MS = 15000; // keep the virtual pad plugged in while a phone reconnects
+const AUTH_MAX_FAILS = 5;
+const AUTH_LOCKOUT_MS = 60000;
 
 function serveStatic(appDir) {
   return (req, res) => {
@@ -54,7 +56,10 @@ class Bridge {
     this.foregroundExe = null;
     this.servers = [];
     this.wss = new WebSocketServer({ noServer: true, maxPayload: 512 * 1024 });
-    this.wss.on('connection', (ws) => this._onConnection(ws));
+    // A wrong pairing code locks that address out for a while, so the 6-digit
+    // code can't be brute-forced (it controls the PC's keyboard and mouse).
+    this.authFails = new Map(); // remote address -> { n, until }
+    this.wss.on('connection', (ws, req) => this._onConnection(ws, req));
     output.on && output.on('rumble', (slot, r) => {
       for (const p of this.players.values()) if (p.slot === slot) this._send(p.ws, { t: 'rumble', ...r });
     });
@@ -115,8 +120,15 @@ class Bridge {
     return 0;
   }
 
-  _onConnection(ws) {
+  _onConnection(ws, req) {
     let player = null;
+    const addr = (req && req.socket && req.socket.remoteAddress) || '?';
+    const fail = this.authFails.get(addr);
+    if (fail && fail.until > Date.now()) {
+      this._send(ws, { t: 'error', code: 'locked', message: 'Too many wrong pairing codes; try again in a minute' });
+      ws.close(4029, 'locked out');
+      return;
+    }
     const authTimer = setTimeout(() => ws.close(4001, 'auth timeout'), 5000);
 
     ws.on('message', (raw) => {
@@ -128,10 +140,15 @@ class Bridge {
         if (msg.t !== 'hello') return;
         clearTimeout(authTimer);
         if (!safeEqual(msg.token || '', this.token)) {
+          const f = this.authFails.get(addr) || { n: 0, until: 0 };
+          f.n += 1;
+          if (f.n >= AUTH_MAX_FAILS) { f.n = 0; f.until = Date.now() + AUTH_LOCKOUT_MS; this.log(`[bridge] locked out ${addr} after ${AUTH_MAX_FAILS} wrong codes`); }
+          this.authFails.set(addr, f);
           this._send(ws, { t: 'error', code: 'auth', message: 'Wrong pairing code' });
           ws.close(4003, 'bad token');
           return;
         }
+        this.authFails.delete(addr);
         player = this._join(ws, msg);
         if (!player) {
           this._send(ws, { t: 'error', code: 'full', message: `All ${MAX_PLAYERS} player slots are in use` });

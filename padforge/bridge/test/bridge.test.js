@@ -68,6 +68,20 @@ test('wrong pairing code is rejected', async () => {
   await t.close();
 });
 
+test('repeated wrong pairing codes lock the address out, even with the right code', async () => {
+  const t = await setup();
+  for (let i = 0; i < 5; i++) {
+    const ws = await t.connect('000000');
+    assert.strictEqual((await ws.next('error')).code, 'auth');
+  }
+  const ws = await t.connect('111111');
+  assert.strictEqual((await ws.next('error')).code, 'locked');
+  await sleep(50);
+  assert.strictEqual(ws.closedWith, 4029);
+  assert.strictEqual(t.output.pads.size, 0);
+  await t.close();
+});
+
 test('pad state, keys and mouse reach the output', async () => {
   const t = await setup();
   const ws = await t.connect();
