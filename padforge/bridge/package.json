@@ -1,0 +1,23 @@
+{
+  "name": "padforge-bridge",
+  "version": "0.1.0",
+  "description": "PC bridge for PadForge: turns phones into custom game controllers (virtual Xbox 360 / DualShock 4, keyboard and mouse).",
+  "main": "src/index.js",
+  "bin": { "padforge": "src/index.js" },
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test test/"
+  },
+  "engines": { "node": ">=18" },
+  "license": "MIT",
+  "dependencies": {
+    "qrcode-terminal": "^0.12.0",
+    "selfsigned": "^2.4.1",
+    "ws": "^8.18.0"
+  },
+  "optionalDependencies": {
+    "koffi": "^2.9.0",
+    "vigemclient": "^1.5.3"
+  },
+  "devDependencies": {}
+}
