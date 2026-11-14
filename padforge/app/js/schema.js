@@ -22,7 +22,7 @@ export function bindOptions(layout) {
       ['screen:next', 'Next screen'], ['screen:prev', 'Previous screen'],
       ...(layout ? layout.screens.flatMap((s) => [['screen:' + s.id, `Go to “${s.name}”`], ['hold:' + s.id, `Show “${s.name}” while held`]]) : []),
     ] },
-    { label: 'Gyro', options: [['gyro:hold', 'Gyro on while held'], ['gyro:off', 'Gyro off while held (ratchet)'], ['gyro:toggle', 'Toggle gyro']] },
+    { label: 'Gyro', options: [['gyro:hold', 'Gyro on while held'], ['gyro:off', 'Gyro off while held (ratchet)'], ['gyro:toggle', 'Toggle gyro'], ['gyro:center', 'Re-centre flight stick']] },
     { label: 'Mouse', options: [['mouse:left', 'Left click'], ['mouse:right', 'Right click'], ['mouse:middle', 'Middle click'], ['wheel:up', 'Wheel up'], ['wheel:down', 'Wheel down']] },
     { label: 'Keyboard', options: KEY_CODES.map((k) => ['key:' + k, keyLabel(k)]) },
   ];
@@ -44,6 +44,7 @@ export function bindLabel(bind) {
     if (b === 'screen:next') return '›';
     if (b === 'screen:prev') return '‹';
     if (b.startsWith('screen:') || b.startsWith('hold:')) return '▤';
+    if (b === 'gyro:center') return 'Centre';
     if (b.startsWith('gyro:')) return 'Gyro';
     return b;
   }).join('+');
@@ -86,11 +87,13 @@ export const TYPES = {
     ],
   },
   trigger: {
-    label: 'Trigger',
-    defaults: { s: 26, a: 0.45, bind: 'RT', analog: true, label: '' },
+    label: 'Trigger / slider',
+    defaults: { s: 26, a: 0.45, bind: 'RT', analog: true, sticky: false, label: '' },
     fields: [
       { key: 'label', type: 'text', label: 'Label' },
-      { key: 'bind', type: 'select', label: 'Trigger', options: [['LT', 'Left trigger'], ['RT', 'Right trigger']] },
+      { key: 'bind', type: 'select', label: 'Controls', options: [['LT', 'Left trigger'], ['RT', 'Right trigger'],
+        ['ry', 'Right stick Y axis'], ['rx', 'Right stick X axis'], ['ly', 'Left stick Y axis'], ['lx', 'Left stick X axis']] },
+      { key: 'sticky', type: 'check', label: 'Stays where you leave it (throttle)' },
       { key: 'analog', type: 'check', label: 'Analog (slide up to press harder)' },
     ],
   },
@@ -122,24 +125,48 @@ export const COMMON_FIELDS = [
 export const GYRO_DEFAULTS = {
   enabled: false, output: 'right', mode: 'always', space: 'player',
   mouseSens: 12, stickRate: 150, smoothing: 4, threshold: 6, deadband: 0.5, roll: 0, invertX: false, invertY: false,
+  // flight stick
+  rollAxis: 'lx', pitchAxis: 'ly', yawAxis: 'rx', rollRange: 40, pitchRange: 30, yawRange: 25, yawMode: 'spring',
+  yawReturn: 0.6, flightDeadzone: 2, flightCurve: 1.2, invertRoll: false, invertPitch: false, invertYaw: false,
 };
+
+const AXIS_OPTIONS = [['lx', 'Left stick X'], ['ly', 'Left stick Y'], ['rx', 'Right stick X'], ['ry', 'Right stick Y'], ['none', 'Nothing']];
+const isFlight = (c) => c.output === 'flight';
+const notFlight = (c) => c.output !== 'flight';
 
 export const GYRO_FIELDS = [
   { key: 'enabled', type: 'check', label: 'Use motion controls' },
-  { key: 'output', type: 'select', label: 'Motion controls', options: [['right', 'Right stick (camera)'], ['mouse', 'Mouse'], ['left', 'Left stick (steering)'], ['ds4', 'Raw gyro to DS4 (let Steam handle it)']] },
+  { key: 'output', type: 'select', label: 'Motion controls', refresh: true, options: [
+    ['flight', 'Flight stick (tilt = roll & pitch, turn = yaw)'], ['right', 'Right stick (camera)'], ['mouse', 'Mouse'],
+    ['left', 'Left stick (steering)'], ['ds4', 'Raw gyro to DS4 (let Steam handle it)']] },
   { key: 'mode', type: 'select', label: 'When', options: [['always', 'Always on'], ['hold', 'Only while a “gyro on” button is held'], ['toggle', 'Off until toggled']] },
-  { key: 'space', type: 'select', label: 'Turning axis', options: [['player', 'Player space (works however you hold it)'], ['local', 'Local (rotate the phone itself)']] },
-  { key: 'mouseSens', type: 'range', label: 'Mouse: pixels per degree', min: 1, max: 60, step: 0.5 },
+  // flight stick
+  { key: 'rollAxis', type: 'select', label: 'Roll (tilt like a steering wheel) drives', options: AXIS_OPTIONS, when: isFlight },
+  { key: 'rollRange', type: 'range', label: 'Roll: degrees for full deflection', min: 10, max: 90, step: 1, when: isFlight },
+  { key: 'pitchAxis', type: 'select', label: 'Pitch (lean top away / toward you) drives', options: AXIS_OPTIONS, when: isFlight },
+  { key: 'pitchRange', type: 'range', label: 'Pitch: degrees for full deflection', min: 10, max: 90, step: 1, when: isFlight },
+  { key: 'yawAxis', type: 'select', label: 'Yaw (turn the phone left / right) drives', options: AXIS_OPTIONS, when: isFlight },
+  { key: 'yawMode', type: 'select', label: 'Yaw behaviour', when: isFlight, options: [['spring', 'Turn and it eases back to centre (rudder)'], ['rate', 'Turning speed'], ['off', 'Off']] },
+  { key: 'yawRange', type: 'range', label: 'Yaw: degrees for full rudder', min: 5, max: 90, step: 1, when: isFlight },
+  { key: 'yawReturn', type: 'range', label: 'Yaw: seconds to ease back to centre', min: 0.1, max: 3, step: 0.05, when: isFlight },
+  { key: 'flightDeadzone', type: 'range', label: 'Dead zone (degrees)', min: 0, max: 10, step: 0.5, when: isFlight },
+  { key: 'flightCurve', type: 'range', label: 'Response curve (1 = linear, higher = finer near centre)', min: 0.5, max: 3, step: 0.05, when: isFlight },
+  { key: 'invertRoll', type: 'check', label: 'Invert roll', when: isFlight },
+  { key: 'invertPitch', type: 'check', label: 'Invert pitch', when: isFlight },
+  { key: 'invertYaw', type: 'check', label: 'Invert yaw', when: isFlight },
+  // aiming
+  { key: 'space', type: 'select', label: 'Turning axis', options: [['player', 'Player space (works however you hold it)'], ['local', 'Local (rotate the phone itself)']], when: notFlight },
+  { key: 'mouseSens', type: 'range', label: 'Mouse: pixels per degree', min: 1, max: 60, step: 0.5, when: (c) => c.output === 'mouse' },
   { key: 'stickRate', type: 'range', label: 'Stick: turn speed for full tilt (°/s)', min: 20, max: 720, step: 5 },
-  { key: 'roll', type: 'range', label: 'Add steering-wheel roll', min: 0, max: 1, step: 0.05 },
-  { key: 'smoothing', type: 'range', label: 'Smoothing (frames)', min: 1, max: 16, step: 1 },
-  { key: 'threshold', type: 'range', label: 'Smooth only below (°/s)', min: 0, max: 60, step: 1 },
-  { key: 'deadband', type: 'range', label: 'Ignore below (°/s)', min: 0, max: 10, step: 0.1 },
-  { key: 'invertX', type: 'check', label: 'Invert horizontal' },
-  { key: 'invertY', type: 'check', label: 'Invert vertical' },
+  { key: 'roll', type: 'range', label: 'Add steering-wheel roll', min: 0, max: 1, step: 0.05, when: notFlight },
+  { key: 'smoothing', type: 'range', label: 'Smoothing (frames)', min: 1, max: 16, step: 1, when: notFlight },
+  { key: 'threshold', type: 'range', label: 'Smooth only below (°/s)', min: 0, max: 60, step: 1, when: notFlight },
+  { key: 'deadband', type: 'range', label: 'Ignore below (°/s)', min: 0, max: 10, step: 0.1, when: notFlight },
+  { key: 'invertX', type: 'check', label: 'Invert horizontal', when: notFlight },
+  { key: 'invertY', type: 'check', label: 'Invert vertical', when: notFlight },
 ];
 
-export const SETTINGS_DEFAULTS = { haptics: true, slide: true, showTabs: true };
+export const SETTINGS_DEFAULTS = { haptics: true, slide: true, showTabs: true, volumeUp: '', volumeDown: '' };
 
 export function newId(prefix = 'c') {
   return prefix + Math.random().toString(36).slice(2, 8);

@@ -76,7 +76,7 @@ async function main() {
   }, [label, scope]);
   const loadLayout = async (id) => {
     await page.evaluate(() => document.querySelector('#btn-layouts').click());
-    await page.locator('.layout-item', { hasText: { standard: 'Standard', shooter: 'Shooter', 'keyboard-mouse': 'Keyboard' }[id] }).click();
+    await page.locator('.layout-item', { hasText: { standard: 'Standard', shooter: 'Shooter', 'keyboard-mouse': 'Keyboard', 'war-thunder': 'War Thunder' }[id] }).click();
     await until(() => page.evaluate((id) => window.padforge.layout && window.padforge.layout.id === id, id), 'layout ' + id);
   };
   const results = [];
@@ -219,6 +219,74 @@ async function main() {
       await touch.up(H);
       await until(() => page.evaluate(() => window.padforge.engine.screenId === 'main'), 'back to main');
     });
+
+    await loadLayout('war-thunder');
+    await step('War Thunder: throttle slider stays where you leave it, even across screens', async () => {
+      const t = await center('Throttle');
+      const id = await touch.down(t.x, t.y + t.h * 0.4);
+      await touch.move(id, t.x, t.y - t.h * 0.25, 6); // ~75%
+      await touch.up(id);
+      await sleep(150);
+      const ry = pad().ry;
+      assert.ok(ry > 0.35 && ry < 0.65, 'throttle ~75% -> RY ~0.5, got ' + ry);
+      await page.locator('#tabs button', { hasText: 'Menu' }).dispatchEvent('pointerdown');
+      await sleep(150);
+      assert.ok(Math.abs(pad().ry - ry) < 0.01, 'throttle kept on menu screen');
+      await page.locator('#tabs button', { hasText: 'Flight' }).dispatchEvent('pointerdown');
+      await sleep(150);
+      assert.ok(Math.abs(pad().ry - ry) < 0.01, 'throttle kept after returning');
+      assert.match(await page.locator('.ctl-trigger .pct').textContent(), /^7\d%$/);
+    });
+
+    await step('War Thunder: tilt = roll & pitch, turning = rudder, Centre recentres', async () => {
+      const rad = Math.PI / 180;
+      // Landscape (angle 90): screen right = device -y, screen up = device +x, normal = +z.
+      const motion = (g, w = { alpha: 0, beta: 0, gamma: 0 }, n = 30) => page.evaluate(([g, w, n]) => {
+        for (let i = 0; i < n; i++) {
+          const e = new Event('devicemotion');
+          e.rotationRate = w;
+          e.accelerationIncludingGravity = { x: g[0] * 9.81, y: g[1] * 9.81, z: g[2] * 9.81 };
+          e.interval = 16;
+          window.dispatchEvent(e);
+        }
+      }, [g, w, n]);
+      const level = [Math.cos(40 * rad), 0, Math.sin(40 * rad)]; // held 40° back, wings level
+      await motion(level);
+      const c = await center('Centre');
+      await touch.tap(c.x, c.y);
+      await motion(level);
+      await until(() => Math.abs(pad().lx) < 0.02 && Math.abs(pad().ly) < 0.02, 'centred');
+      // Roll right 20°: right edge dips.
+      await motion([Math.cos(40 * rad) * Math.cos(20 * rad), Math.sin(20 * rad), Math.sin(40 * rad) * Math.cos(20 * rad)]);
+      await until(() => pad().lx > 0.3 && Math.abs(pad().ly) < 0.05, 'roll right -> left stick X');
+      // Lean the top away 15° more: nose down (stick forward).
+      await motion([Math.cos(55 * rad), 0, Math.sin(55 * rad)]);
+      await until(() => pad().ly > 0.3 && Math.abs(pad().lx) < 0.05, 'pitch -> left stick Y');
+      // Turn right around real-world up: rudder.
+      const wv = level.map((v) => -v * 100);
+      await motion(level, { beta: wv[0], gamma: wv[1], alpha: wv[2] }, 20);
+      await until(() => pad().rx > 0.3, 'yaw -> right stick X');
+      await motion(level, { alpha: 0, beta: 0, gamma: 0 }, 120); // 2 s still: rudder eases back
+      await until(() => Math.abs(pad().rx) < 0.05, 'rudder recentres');
+    });
+
+    await step('War Thunder: volume up = light guns, volume down = heavy guns', async () => {
+      const key = (type, k) => page.evaluate(([type, k]) => window.dispatchEvent(new KeyboardEvent(type, { key: k })), [type, k]);
+      await key('keydown', 'AudioVolumeUp');
+      await until(() => pad().rt === 1 && pad().lt === 0, 'MG');
+      await key('keydown', 'AudioVolumeDown');
+      await until(() => pad().rt === 1 && pad().lt === 1, 'both');
+      await key('keyup', 'AudioVolumeUp');
+      await key('keyup', 'AudioVolumeDown');
+      await until(() => pad().rt === 0 && pad().lt === 0, 'released');
+      const flaps = await center('Flaps ▼');
+      const id = await touch.down(flaps.x, flaps.y);
+      await until(() => pad().buttons.has('DOWN'), 'flaps down');
+      await touch.up(id);
+      await until(() => !pad().buttons.has('DOWN'), 'flaps button released');
+      await sleep(50);
+    });
+    if (SHOTS) await page.screenshot({ path: path.join(SHOTS, '4-war-thunder.png') });
 
     await step('editor: drag a control, relabel it, add a screen, save to the PC', async () => {
       await loadLayout('standard');

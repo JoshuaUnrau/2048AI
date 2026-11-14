@@ -26,7 +26,10 @@ function hold(bind, f) {
   else if (/^[A-Z]+$/.test(bind)) f.b.add(bind);
 }
 const splitBinds = (...bs) => bs.filter(Boolean).flatMap((b) => b.split('+')).filter(Boolean);
-const isEdge = (b) => b.startsWith('screen:') || b.startsWith('hold:') || b === 'gyro:toggle' || b.startsWith('wheel:');
+const isEdge = (b) => b.startsWith('screen:') || b.startsWith('hold:') || b === 'gyro:toggle' || b === 'gyro:center' || b.startsWith('wheel:');
+const AXES = new Set(['lx', 'ly', 'rx', 'ry']);
+// Phone hardware keys that layouts can bind (delivered by browsers that allow it, or a native wrapper).
+const HW_KEYS = { AudioVolumeUp: 'volumeUp', AudioVolumeDown: 'volumeDown', VolumeUp: 'volumeUp', VolumeDown: 'volumeDown' };
 
 // Shape a raw stick vector: radial dead zone, outer dead zone, response curve.
 export function shapeStick(x, y, { deadzone = 0, outer = 0, curve = 1 }) {
@@ -230,30 +233,55 @@ class DpadCtl extends Control {
 }
 
 class TriggerCtl extends Control {
+  // A vertical slider. Normal triggers spring back when released; "sticky" ones
+  // (throttles) stay where you leave them. Can drive LT/RT or any stick axis.
   build() {
-    this.el.innerHTML = '<div class="fill"></div><span class="lbl"></span>';
+    this.el.innerHTML = '<div class="fill"></div><span class="lbl"></span><span class="pct"></span>';
     this.fill = this.el.querySelector('.fill');
+    this.pct = this.el.querySelector('.pct');
     this.el.querySelector('.lbl').textContent = this.def.label || this.def.bind;
+    this.el.classList.toggle('sticky', !!this.def.sticky);
     this.pid = null;
-    this.v = 0;
+    const kept = this.def.sticky && this.engine.sticky.get(this.def.id);
+    this.v = kept ? kept.v : this.def.sticky ? (this.def.start || 0) : 0;
+    this._draw();
   }
   down(p) { if (this.pid === null) { this.pid = p.id; this.move(p); this.engine.haptic(); } }
   move(p) {
     if (p.id !== this.pid) return;
-    if (!this.def.analog) { this.v = 1; } else {
+    if (!this.def.analog && !this.def.sticky) { this.v = 1; } else {
       const l = this.local(p);
-      this.v = clamp(1 - l.y / l.h, 0.15, 1);
+      let v = clamp(1 - l.y / l.h, 0, 1);
+      if (this.def.sticky) {
+        // Detents at idle, 100% and the halfway mark make positions easy to find by feel.
+        for (const d of [0, 0.5, 1]) if (Math.abs(v - d) < 0.03) v = d;
+        if (v !== this.v && [0, 0.5, 1].includes(v)) this.engine.haptic(15);
+      } else v = Math.max(0.15, v);
+      this.v = v;
     }
-    this.fill.style.height = this.v * 100 + '%';
-    this.el.classList.toggle('on', this.v > 0);
+    this._draw();
   }
   up(p, cancelled) {
     if (!cancelled && p && p.id !== this.pid) return;
-    this.pid = null; this.v = 0; this.fill.style.height = '0'; this.el.classList.remove('on');
+    this.pid = null;
+    if (!this.def.sticky) this.v = 0;
+    this._draw();
+  }
+  _draw() {
+    if (this.def.sticky) this.engine.sticky.set(this.def.id, { bind: this.def.bind, v: this.v });
+    this.fill.style.height = this.v * 100 + '%';
+    this.el.classList.toggle('on', this.pid !== null);
+    this.pct.textContent = this.def.sticky ? Math.round(this.v * 100) + '%' : '';
   }
   contribute(f) {
+    const b = this.def.bind;
+    if (AXES.has(b)) {
+      // Sticky sliders use the whole axis (0% = -1, 100% = +1); springy ones only the top half.
+      f[b] += this.def.sticky ? this.v * 2 - 1 : this.v;
+      return;
+    }
     if (!this.v) return;
-    if (this.def.bind === 'LT') f.lt = Math.max(f.lt, this.v); else f.rt = Math.max(f.rt, this.v);
+    if (b === 'LT') f.lt = Math.max(f.lt, this.v); else f.rt = Math.max(f.rt, this.v);
   }
 }
 
@@ -326,6 +354,10 @@ export class Engine {
     this.lastSentAt = 0;
     this.lastMsg = null;
     this.editing = false;
+    this.hwHeld = new Set(); // phone hardware keys currently held (volume buttons)
+    // Positions of sticky sliders (throttles). Kept across screen swaps and edits, and
+    // still sent while the slider's screen is hidden, so the throttle never jumps.
+    this.sticky = new Map();
     this.commonLayer = document.createElement('div');
     this.screenLayer = document.createElement('div');
     this.commonLayer.className = 'layer common';
@@ -342,6 +374,7 @@ export class Engine {
 
   setLayout(layout, screenId) {
     this.releaseAll();
+    if (!this.layout || this.layout.id !== layout.id) this.sticky.clear();
     this.layout = layout;
     this.holdStack = [];
     this.gyroToggled = false;
@@ -413,6 +446,7 @@ export class Engine {
 
   edge(bind, down, ctl) {
     if (bind === 'gyro:toggle') { if (down) this.gyroToggled = !this.gyroToggled; return; }
+    if (bind === 'gyro:center') { if (down && this.gyro) this.gyro.calibrate(); return; }
     if (bind.startsWith('wheel:')) { if (down) this.wheel += bind === 'wheel:up' ? 1 : -1; return; }
     if (bind === 'screen:next' || bind === 'screen:prev') { if (down) this.stepScreen(bind === 'screen:next' ? 1 : -1); return; }
     if (bind.startsWith('screen:')) { if (down) this.setScreen(bind.slice(7)); return; }
@@ -483,6 +517,16 @@ export class Engine {
     st.addEventListener('pointerup', end);
     st.addEventListener('pointercancel', end);
     st.addEventListener('contextmenu', (e) => e.preventDefault());
+    const hw = (e, down) => {
+      const name = HW_KEYS[e.key] || HW_KEYS[e.code];
+      const bind = name && this.layout && !this.editing && this.layout.settings[name];
+      if (!bind) return;
+      e.preventDefault();
+      if (down && !this.hwHeld.has(name)) { this.hwHeld.add(name); for (const b of splitBinds(bind)) if (isEdge(b)) this.edge(b, true, null); this.haptic(); }
+      if (!down && this.hwHeld.has(name)) { this.hwHeld.delete(name); for (const b of splitBinds(bind)) if (isEdge(b)) this.edge(b, false, null); }
+    };
+    window.addEventListener('keydown', (e) => hw(e, true));
+    window.addEventListener('keyup', (e) => hw(e, false));
   }
 
   _loop(now) {
@@ -494,15 +538,19 @@ export class Engine {
     const seen = new Set();
     for (const c of this.controls) { c.contribute(f, now, dt); seen.add(c); }
     for (const c of this.pointers.values()) if (!seen.has(c)) c.contribute(f, now, dt); // e.g. a hold-screen button
+    for (const [id, st] of this.sticky) {
+      if (this.byId.has(id)) continue;
+      if (AXES.has(st.bind)) f[st.bind] += st.v * 2 - 1;
+      else if (st.bind === 'LT') f.lt = Math.max(f.lt, st.v);
+      else if (st.bind === 'RT') f.rt = Math.max(f.rt, st.v);
+    }
+    for (const name of this.hwHeld) for (const b of splitBinds(this.layout.settings[name])) if (!isEdge(b)) hold(b, f);
     this.pulses = this.pulses.filter((p) => p.until > now);
     for (const p of this.pulses) for (const b of p.binds) if (!isEdge(b)) hold(b, f);
 
     this._applyGyro(f);
 
-    for (const [x, y] of [['lx', 'ly'], ['rx', 'ry']]) {
-      const m = Math.hypot(f[x], f[y]);
-      if (m > 1) { f[x] /= m; f[y] /= m; }
-    }
+    for (const a of AXES) f[a] = clamp(f[a], -1, 1);
     f.lt = clamp(f.lt, 0, 1); f.rt = clamp(f.rt, 0, 1);
     this._send(f, now);
     this.onFrame(f);
@@ -524,6 +572,25 @@ export class Engine {
     else if (cfg.output === 'right') { f.rx += rate.x / cfg.stickRate; f.ry += rate.y / cfg.stickRate; }
     else if (cfg.output === 'left') { f.lx += rate.x / cfg.stickRate; }
     else if (cfg.output === 'ds4' && g.raw) { f.g = g.raw; f.a = g.accelG; }
+    else if (cfg.output === 'flight') this._flight(f, g, cfg);
+  }
+
+  _flight(f, g, cfg) {
+    const fl = g.flight();
+    if (!fl) return;
+    const shape = (deg, range, invert) => {
+      const dz = cfg.flightDeadzone || 0;
+      const m = clamp((Math.abs(deg) - dz) / Math.max(1, range - dz), 0, 1);
+      const v = Math.sign(deg) * Math.pow(m, cfg.flightCurve || 1);
+      return invert ? -v : v;
+    };
+    const put = (axis, v) => { if (AXES.has(axis)) f[axis] += v; };
+    put(cfg.rollAxis, shape(fl.roll, cfg.rollRange, cfg.invertRoll));
+    put(cfg.pitchAxis, shape(fl.pitch, cfg.pitchRange, cfg.invertPitch));
+    if (cfg.yawMode !== 'off') {
+      const yv = cfg.yawMode === 'rate' ? clamp(fl.yaw / cfg.stickRate, -1, 1) * (cfg.invertYaw ? -1 : 1) : shape(fl.yaw, cfg.yawRange, cfg.invertYaw);
+      put(cfg.yawAxis, yv);
+    }
   }
 
   _send(f, now) {

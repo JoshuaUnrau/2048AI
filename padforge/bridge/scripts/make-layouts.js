@@ -8,7 +8,8 @@ const pill = (x, y, s, bind, extra = {}) => btn(x, y, s, bind, { a: 2.1, shape: 
 const stick = (x, y, s, bind, extra = {}) => ({ id: id(), type: 'stick', x, y, s, a: 1, bind, floating: false, radius: 14, deadzone: 0.12, outer: 0.05, curve: 1.3, sens: 1, follow: false, ...extra });
 const zone = (x, y, s, a, bind, extra = {}) => stick(x, y, s, bind, { a, floating: true, follow: true, ...extra });
 const dpad = (x, y, s, bind = 'dpad') => ({ id: id(), type: 'dpad', x, y, s, a: 1, bind, diagonals: true });
-const trigger = (x, y, s, a, bind, label, analog = true) => ({ id: id(), type: 'trigger', x, y, s, a, bind, label, analog });
+const trigger = (x, y, s, a, bind, label, analog = true, extra = {}) => ({ id: id(), type: 'trigger', x, y, s, a, bind, label, analog, sticky: false, ...extra });
+const rect = (x, y, s, bind, label, extra = {}) => btn(x, y, s, bind, { shape: 'rect', label, ...extra });
 const pad = (x, y, s, a, bind, extra = {}) => ({ id: id(), type: 'touchpad', x, y, s, a, bind, sens: 1, tap: '', ...extra });
 
 const layouts = [
@@ -84,12 +85,49 @@ const layouts = [
       ] },
     ],
   },
+  {
+    // Hold the phone like a yoke: tilt = roll/pitch, turn = rudder. Throttle slider on the left.
+    // In War Thunder: Controls -> assign Roll = Left stick X, Pitch = Left stick Y,
+    // Yaw = Right stick X, Throttle = Right stick Y (see docs/WAR_THUNDER.md).
+    id: 'war-thunder', name: 'War Thunder (flight)', match: ['aces.exe', 'aces'],
+    gyro: {
+      enabled: true, output: 'flight', mode: 'always',
+      rollAxis: 'lx', pitchAxis: 'ly', yawAxis: 'rx', rollRange: 40, pitchRange: 30, yawRange: 25,
+      yawMode: 'spring', yawReturn: 0.6, flightDeadzone: 2, flightCurve: 1.3,
+    },
+    // Volume up = light guns (machine guns), volume down = heavy guns (cannons).
+    settings: { volumeUp: 'RT', volumeDown: 'LT' },
+    common: [trigger(6, 56, 84, 0.3, 'ry', 'Throttle', true, { sticky: true })],
+    screens: [
+      { id: 'flight', name: 'Flight', controls: [
+        rect(21, 26, 15, 'UP', 'Flaps ▲'),
+        rect(21, 48, 15, 'DOWN', 'Flaps ▼'),
+        rect(21, 72, 15, 'Y', 'Gear'),
+        btn(34, 72, 13, 'B', { label: 'Airbrake' }),
+        btn(88, 70, 27, 'RT', { label: 'MG' }),
+        btn(73, 84, 20, 'LT', { label: 'Cannon' }),
+        btn(72, 60, 14, 'RT+LT', { label: 'All guns' }),
+        btn(88, 38, 14, 'X', { label: 'Rockets' }),
+        btn(56, 84, 14, 'A', { label: 'Bombs' }),
+        pill(36, 10, 9, 'gyro:center', { label: 'Centre' }),
+        pill(50, 10, 9, 'RB', { label: 'Zoom' }),
+        pill(64, 10, 9, 'LB', { label: 'Lock' }),
+        { id: id(), type: 'label', x: 50, y: 42, s: 8, a: 4, label: 'tilt to fly · turn for rudder', opacity: 0.5 },
+      ] },
+      { id: 'menu', name: 'Menu', gyro: false, controls: [
+        dpad(36, 56, 54),
+        btn(76, 66, 24, 'A'), btn(90, 40, 18, 'B'), btn(64, 40, 14, 'X'), btn(76, 20, 13, 'Y'),
+        pill(46, 10, 9, 'BACK', { label: 'Map' }), pill(60, 10, 9, 'START', { label: 'Menu' }),
+        pill(88, 10, 9, 'screen:flight', { label: 'Fly' }),
+      ] },
+    ],
+  },
 ];
 
 const dir = path.join(__dirname, '..', 'layouts');
 fs.mkdirSync(dir, { recursive: true });
 for (const l of layouts) {
-  l.settings = { haptics: true, slide: true, showTabs: true };
+  l.settings = { haptics: true, slide: true, showTabs: true, ...(l.settings || {}) };
   fs.writeFileSync(path.join(dir, l.id + '.json'), JSON.stringify(l, null, 2) + '\n');
 }
 console.log('wrote', layouts.map((l) => l.id).join(', '));

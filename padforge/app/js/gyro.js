@@ -16,6 +16,11 @@ export class Gyro {
     this.history = [];
     this.lastT = 0;
     this.cfg = null;
+    // Flight-stick mode: absolute tilt (from gravity) + self-centring yaw.
+    this.gs = null; // low-pass filtered gravity "up" vector, device space
+    this.tiltRaw = null; // { roll, pitch } degrees, before centring
+    this.neutral = null;
+    this.yaw = 0; // degrees (spring mode) or deg/s (rate mode)
     this._onMotion = (e) => this._motion(e);
   }
 
@@ -98,8 +103,51 @@ export class Gyro {
     if (cfg.invertY) lookY = -lookY;
     this.rate = { x: lookX, y: lookY };
     this.lastEventAt = performance.now();
+    this._flight(w, right, up, dt);
     this.accX += lookX * dt;
     this.accY += lookY * dt;
+  }
+
+  _flight(w, right, up, dt) {
+    if (!this.gravity) return;
+    const k = 0.25; // gravity low-pass, removes hand jitter / bumps
+    this.gs = this.gs ? this.gs.map((v, i) => v + (this.gravity[i] - v) * k) : [...this.gravity];
+    const len = Math.hypot(...this.gs) || 1;
+    const g = this.gs.map((v) => v / len);
+    const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+    const deg = 180 / Math.PI;
+    // Roll: how far the screen's right edge has dipped (steering-wheel motion).
+    // Pitch: how far the screen leans back (top away from you) - works at any holding angle.
+    this.tiltRaw = {
+      roll: -Math.asin(Math.max(-1, Math.min(1, dot(g, right)))) * deg,
+      pitch: Math.atan2(g[2], dot(g, up)) * deg,
+    };
+    if (!this.neutral) this.neutral = { roll: 0, pitch: this.tiltRaw.pitch };
+    // Yaw: turning the phone left/right around real-world up.
+    const cfg = this.cfg || {};
+    const yawRate = -dot(w, g);
+    if (cfg.yawMode === 'rate') this.yaw = yawRate;
+    else {
+      this.yaw += yawRate * dt;
+      this.yaw *= Math.exp(-dt / Math.max(0.05, cfg.yawReturn || 0.6)); // springs back to centre
+    }
+  }
+
+  // Re-centre flight mode on however the phone is held right now.
+  calibrate() {
+    if (this.tiltRaw) this.neutral = { ...this.tiltRaw };
+    this.yaw = 0;
+  }
+
+  // Flight-stick angles relative to centre, or null if the sensor is silent.
+  flight() {
+    if (!this.tiltRaw || !this.lastEventAt || performance.now() - this.lastEventAt > 300) return null;
+    const wrap = (a) => ((a + 540) % 360) - 180;
+    return {
+      roll: wrap(this.tiltRaw.roll - this.neutral.roll),
+      pitch: wrap(this.tiltRaw.pitch - this.neutral.pitch),
+      yaw: this.yaw,
+    };
   }
 
   // Current look rate (deg/s). Zero if the sensor has gone quiet, so a stalled

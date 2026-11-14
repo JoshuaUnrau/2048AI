@@ -181,7 +181,8 @@
           "a": 0.32,
           "bind": "RT",
           "label": "Gas",
-          "analog": true
+          "analog": true,
+          "sticky": false
         },
         {
           "id": "b12",
@@ -192,7 +193,8 @@
           "a": 0.32,
           "bind": "LT",
           "label": "Brake",
-          "analog": true
+          "analog": true,
+          "sticky": false
         },
         {
           "id": "b13",

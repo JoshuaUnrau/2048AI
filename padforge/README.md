@@ -4,13 +4,14 @@ Turn your phone into a custom game controller for **Steam on Windows** and **Ste
 
 - **Build your own layouts.** Buttons, analog sticks, d-pads, analog triggers and touchpads, placed anywhere and sized however you like.
 - **Swap screens instantly.** Each layout can have several pages, such as Combat, Vehicle and Menu. Swap with tabs, a "go to" button, or a "show while held" button that works like a shift key. Controls marked "every screen" keep working during a swap, so you can keep moving while you switch.
+- **Flight stick from tilt.** Tilt the phone to roll and pitch, and turn it for rudder. A throttle slider stays where you leave it. See [War Thunder layout](docs/WAR_THUNDER.md).
 - **Motion controls.** Gyro aiming to the right stick or mouse, or steering with roll. Options include smoothing, dead band, "hold to aim" and ratcheting (lift to re-centre). DS4 mode can instead pass raw gyro data to Steam Input.
 - **Feels like a real pad.** Floating sticks, dead zones and response curves, sliding between buttons, turbo, toggles, combos (e.g. `Ctrl+C`), haptics on press, and game rumble passed back to the phone.
 - **Steam sees a real controller.** You get a virtual Xbox 360 pad (or DualShock 4 on Windows), so Steam Input, Big Picture and per-game Steam configs all work. Keyboard and mouse output covers games without controller support.
 - **Multiplayer and auto-switching.** Up to 8 phones, each its own controller. Layouts can switch automatically when a matching game gets focus.
 - **Sharing.** Export and import layouts as JSON.
 
-![Shooter layout](docs/screenshots/2-shooter.png)
+![War Thunder layout](docs/screenshots/4-war-thunder.png)
 
 ## How it works
 
@@ -69,6 +70,7 @@ node test/e2e.js     # drives the phone app in an emulated phone with real multi
   - uinput on a Steam Deck.
   - Real phone gyros.
 - iPhone browsers can't vibrate, so haptics are Android-only until there's a native app wrapper.
+- Phone volume buttons can be bound in a layout, but browsers keep them for volume. They will work in the native app.
 - Auto layout switching uses the focused window. It works on Windows and on Linux desktops with `xdotool`, but not in Steam Deck Game Mode.
 - Planned:
   - Native app (Capacitor) for iOS haptics, Bluetooth and on-device voice commands.

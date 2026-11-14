@@ -97,3 +97,13 @@ Button `bind` values can be joined with `+` to make combos:
 | `screen:next`, `screen:prev`, `screen:<id>` | Change screen |
 | `hold:<id>` | Show that screen while held |
 | `gyro:hold`, `gyro:off`, `gyro:toggle` | Motion controls on while held, off while held, or toggle |
+| `gyro:center` | Re-centre the flight stick |
+
+A `trigger` control can drive `LT`/`RT` or any stick axis (`lx`, `ly`, `rx`, `ry`). With `"sticky": true` it stays where you leave it, like a throttle. A sticky slider uses the whole axis (0% = -1, 100% = +1).
+
+Layout `settings.volumeUp` / `settings.volumeDown` bind the phone's volume buttons, where the platform delivers them.
+
+Gyro `output: "flight"` maps absolute tilt to axes:
+- `rollAxis`, `pitchAxis`, `yawAxis` choose the axes.
+- `rollRange`, `pitchRange`, `yawRange` set the degrees for full deflection.
+- `yawMode` is `spring`, `rate` or `off`.

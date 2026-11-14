@@ -1,0 +1,284 @@
+{
+  "id": "war-thunder",
+  "name": "War Thunder (flight)",
+  "match": [
+    "aces.exe",
+    "aces"
+  ],
+  "gyro": {
+    "enabled": true,
+    "output": "flight",
+    "mode": "always",
+    "rollAxis": "lx",
+    "pitchAxis": "ly",
+    "yawAxis": "rx",
+    "rollRange": 40,
+    "pitchRange": 30,
+    "yawRange": 25,
+    "yawMode": "spring",
+    "yawReturn": 0.6,
+    "flightDeadzone": 2,
+    "flightCurve": 1.3
+  },
+  "settings": {
+    "haptics": true,
+    "slide": true,
+    "showTabs": true,
+    "volumeUp": "RT",
+    "volumeDown": "LT"
+  },
+  "common": [
+    {
+      "id": "b27",
+      "type": "trigger",
+      "x": 6,
+      "y": 56,
+      "s": 84,
+      "a": 0.3,
+      "bind": "ry",
+      "label": "Throttle",
+      "analog": true,
+      "sticky": true
+    }
+  ],
+  "screens": [
+    {
+      "id": "flight",
+      "name": "Flight",
+      "controls": [
+        {
+          "id": "b28",
+          "type": "button",
+          "x": 21,
+          "y": 26,
+          "s": 15,
+          "a": 1,
+          "bind": "UP",
+          "shape": "rect",
+          "label": "Flaps ▲"
+        },
+        {
+          "id": "b29",
+          "type": "button",
+          "x": 21,
+          "y": 48,
+          "s": 15,
+          "a": 1,
+          "bind": "DOWN",
+          "shape": "rect",
+          "label": "Flaps ▼"
+        },
+        {
+          "id": "b2a",
+          "type": "button",
+          "x": 21,
+          "y": 72,
+          "s": 15,
+          "a": 1,
+          "bind": "Y",
+          "shape": "rect",
+          "label": "Gear"
+        },
+        {
+          "id": "b2b",
+          "type": "button",
+          "x": 34,
+          "y": 72,
+          "s": 13,
+          "a": 1,
+          "bind": "B",
+          "shape": "circle",
+          "label": "Airbrake"
+        },
+        {
+          "id": "b2c",
+          "type": "button",
+          "x": 88,
+          "y": 70,
+          "s": 27,
+          "a": 1,
+          "bind": "RT",
+          "shape": "circle",
+          "label": "MG"
+        },
+        {
+          "id": "b2d",
+          "type": "button",
+          "x": 73,
+          "y": 84,
+          "s": 20,
+          "a": 1,
+          "bind": "LT",
+          "shape": "circle",
+          "label": "Cannon"
+        },
+        {
+          "id": "b2e",
+          "type": "button",
+          "x": 72,
+          "y": 60,
+          "s": 14,
+          "a": 1,
+          "bind": "RT+LT",
+          "shape": "circle",
+          "label": "All guns"
+        },
+        {
+          "id": "b2f",
+          "type": "button",
+          "x": 88,
+          "y": 38,
+          "s": 14,
+          "a": 1,
+          "bind": "X",
+          "shape": "circle",
+          "label": "Rockets"
+        },
+        {
+          "id": "b2g",
+          "type": "button",
+          "x": 56,
+          "y": 84,
+          "s": 14,
+          "a": 1,
+          "bind": "A",
+          "shape": "circle",
+          "label": "Bombs"
+        },
+        {
+          "id": "b2h",
+          "type": "button",
+          "x": 36,
+          "y": 10,
+          "s": 9,
+          "a": 2.1,
+          "bind": "gyro:center",
+          "shape": "pill",
+          "label": "Centre"
+        },
+        {
+          "id": "b2i",
+          "type": "button",
+          "x": 50,
+          "y": 10,
+          "s": 9,
+          "a": 2.1,
+          "bind": "RB",
+          "shape": "pill",
+          "label": "Zoom"
+        },
+        {
+          "id": "b2j",
+          "type": "button",
+          "x": 64,
+          "y": 10,
+          "s": 9,
+          "a": 2.1,
+          "bind": "LB",
+          "shape": "pill",
+          "label": "Lock"
+        },
+        {
+          "id": "b2k",
+          "type": "label",
+          "x": 50,
+          "y": 42,
+          "s": 8,
+          "a": 4,
+          "label": "tilt to fly · turn for rudder",
+          "opacity": 0.5
+        }
+      ]
+    },
+    {
+      "id": "menu",
+      "name": "Menu",
+      "gyro": false,
+      "controls": [
+        {
+          "id": "b2l",
+          "type": "dpad",
+          "x": 36,
+          "y": 56,
+          "s": 54,
+          "a": 1,
+          "bind": "dpad",
+          "diagonals": true
+        },
+        {
+          "id": "b2m",
+          "type": "button",
+          "x": 76,
+          "y": 66,
+          "s": 24,
+          "a": 1,
+          "bind": "A",
+          "shape": "circle"
+        },
+        {
+          "id": "b2n",
+          "type": "button",
+          "x": 90,
+          "y": 40,
+          "s": 18,
+          "a": 1,
+          "bind": "B",
+          "shape": "circle"
+        },
+        {
+          "id": "b2o",
+          "type": "button",
+          "x": 64,
+          "y": 40,
+          "s": 14,
+          "a": 1,
+          "bind": "X",
+          "shape": "circle"
+        },
+        {
+          "id": "b2p",
+          "type": "button",
+          "x": 76,
+          "y": 20,
+          "s": 13,
+          "a": 1,
+          "bind": "Y",
+          "shape": "circle"
+        },
+        {
+          "id": "b2q",
+          "type": "button",
+          "x": 46,
+          "y": 10,
+          "s": 9,
+          "a": 2.1,
+          "bind": "BACK",
+          "shape": "pill",
+          "label": "Map"
+        },
+        {
+          "id": "b2r",
+          "type": "button",
+          "x": 60,
+          "y": 10,
+          "s": 9,
+          "a": 2.1,
+          "bind": "START",
+          "shape": "pill",
+          "label": "Menu"
+        },
+        {
+          "id": "b2s",
+          "type": "button",
+          "x": 88,
+          "y": 10,
+          "s": 9,
+          "a": 2.1,
+          "bind": "screen:flight",
+          "shape": "pill",
+          "label": "Fly"
+        }
+      ]
+    }
+  ]
+}

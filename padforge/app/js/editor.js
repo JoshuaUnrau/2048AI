@@ -160,7 +160,7 @@ export class Editor {
 
   _field(f, obj, { rerender = true, layout } = {}) {
     const id = 'f-' + Math.random().toString(36).slice(2);
-    const set = (v) => { obj[f.key] = v; this._changed(rerender); };
+    const set = (v) => { obj[f.key] = v; this._changed(rerender); if (f.refresh) this.renderPanel(); };
     let input;
     if (f.type === 'check') {
       input = h('input', { id, type: 'checkbox', checked: !!obj[f.key], onchange: (e) => set(e.target.checked) });
@@ -274,8 +274,10 @@ export class Editor {
 
   _tab_motion() {
     return [
-      h('p', { class: 'hint' }, 'Aim or steer by moving the phone. Add a button with a Gyro action for “hold to aim” or ratcheting (lift to re-centre). On Windows with the DS4 output, “Raw gyro to DS4” lets Steam Input handle the motion instead.'),
-      h('div', { class: 'section' }, GYRO_FIELDS.map((f) => this._field(f, this.draft.gyro, { rerender: false }))),
+      h('p', { class: 'hint' }, this.draft.gyro.output === 'flight'
+        ? 'Hold the phone like a yoke: tilt it like a steering wheel to roll, lean the top away to push the nose down, turn it to use the rudder. Add a button with “Re-centre flight stick” to set the neutral position.'
+        : 'Aim or steer by moving the phone. Add a button with a Gyro action for “hold to aim” or ratcheting (lift to re-centre). On Windows with the DS4 output, “Raw gyro to DS4” lets Steam Input handle the motion instead.'),
+      h('div', { class: 'section' }, GYRO_FIELDS.filter((f) => !f.when || f.when(this.draft.gyro)).map((f) => this._field(f, this.draft.gyro, { rerender: false }))),
     ];
   }
 
@@ -290,6 +292,11 @@ export class Editor {
         this._field({ key: 'haptics', type: 'check', label: 'Vibrate on press' }, d.settings),
         this._field({ key: 'slide', type: 'check', label: 'Slide between buttons without lifting' }, d.settings),
         this._field({ key: 'showTabs', type: 'check', label: 'Show screen tabs at the top' }, d.settings)),
+      h('div', { class: 'section' },
+        h('h4', {}, 'Phone buttons'),
+        h('p', { class: 'hint' }, 'Volume buttons only reach the controller in the PadForge app (coming soon) or browsers that allow it; phone browsers normally keep them for volume.'),
+        this._field({ key: 'volumeUp', type: 'bind', label: 'Volume up', optional: true }, d.settings),
+        this._field({ key: 'volumeDown', type: 'bind', label: 'Volume down', optional: true }, d.settings)),
       h('div', { class: 'section' },
         h('h4', {}, 'Share'),
         io,

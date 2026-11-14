@@ -89,11 +89,14 @@ input[type=text], input:not([type]), select, textarea { width: 100%; -webkit-use
 .ctl-trigger { background: var(--ctl); border: 2px solid var(--ctl-line); border-radius: 14px; overflow: hidden; align-items: flex-end; }
 .ctl-trigger .fill { position: absolute; left: 0; right: 0; bottom: 0; height: 0; background: var(--ctl-on); pointer-events: none; }
 .ctl-trigger .lbl { position: absolute; top: 8px; left: 0; right: 0; }
+.ctl-trigger .pct { position: absolute; bottom: 8px; left: 0; right: 0; text-align: center; font-size: 13px; font-variant-numeric: tabular-nums; pointer-events: none; }
+.ctl-trigger.sticky .fill { background: rgba(43, 212, 164, 0.35); border-top: 3px solid var(--accent-2); }
+.ctl-trigger.sticky::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; border-top: 1px dashed rgba(255, 255, 255, 0.35); pointer-events: none; }
 
 .ctl-touchpad { background: rgba(255, 255, 255, 0.035); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 18px; }
 .ctl-touchpad .lbl { opacity: 0.35; }
 .ctl-touchpad.on { background: rgba(79, 140, 255, 0.12); }
-.ctl-label { color: var(--muted); font-size: clamp(11px, 3vh, 18px); pointer-events: none; }
+.ctl-label { color: var(--muted); font-size: clamp(11px, 3vh, 18px); pointer-events: none; white-space: nowrap; text-align: center; }
 
 /* ---------- editing */
 #stage.editing { background-image: linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px); background-size: 5% 5%; }
