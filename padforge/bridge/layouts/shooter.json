@@ -1,0 +1,363 @@
+{
+  "id": "shooter",
+  "name": "Shooter (gyro aim)",
+  "match": [],
+  "gyro": {
+    "enabled": true,
+    "output": "right",
+    "mode": "always",
+    "stickRate": 140
+  },
+  "common": [
+    {
+      "id": "bo",
+      "type": "stick",
+      "x": 19,
+      "y": 62,
+      "s": 74,
+      "a": 0.72,
+      "bind": "left",
+      "floating": true,
+      "radius": 14,
+      "deadzone": 0.12,
+      "outer": 0.05,
+      "curve": 1.3,
+      "sens": 1,
+      "follow": true,
+      "click": "LS",
+      "label": "Move"
+    }
+  ],
+  "screens": [
+    {
+      "id": "combat",
+      "name": "Combat",
+      "controls": [
+        {
+          "id": "bp",
+          "type": "button",
+          "x": 86,
+          "y": 66,
+          "s": 25,
+          "a": 1,
+          "bind": "RT",
+          "shape": "circle",
+          "label": "Fire"
+        },
+        {
+          "id": "bq",
+          "type": "button",
+          "x": 69,
+          "y": 40,
+          "s": 15,
+          "a": 1,
+          "bind": "LT",
+          "shape": "circle",
+          "label": "Aim"
+        },
+        {
+          "id": "br",
+          "type": "button",
+          "x": 67,
+          "y": 80,
+          "s": 15,
+          "a": 1,
+          "bind": "A",
+          "shape": "circle",
+          "label": "Jump"
+        },
+        {
+          "id": "bs",
+          "type": "button",
+          "x": 88,
+          "y": 33,
+          "s": 13,
+          "a": 1,
+          "bind": "X",
+          "shape": "circle",
+          "label": "Reload"
+        },
+        {
+          "id": "bt",
+          "type": "button",
+          "x": 52,
+          "y": 82,
+          "s": 13,
+          "a": 1,
+          "bind": "B",
+          "shape": "circle",
+          "label": "Crouch"
+        },
+        {
+          "id": "bu",
+          "type": "button",
+          "x": 53,
+          "y": 58,
+          "s": 12,
+          "a": 1,
+          "bind": "Y",
+          "shape": "circle",
+          "label": "Swap"
+        },
+        {
+          "id": "bv",
+          "type": "button",
+          "x": 39,
+          "y": 84,
+          "s": 12,
+          "a": 1,
+          "bind": "gyro:off",
+          "shape": "rect",
+          "label": "Lift"
+        },
+        {
+          "id": "bw",
+          "type": "button",
+          "x": 79,
+          "y": 10,
+          "s": 10,
+          "a": 2.1,
+          "bind": "RS",
+          "shape": "pill",
+          "label": "Melee"
+        },
+        {
+          "id": "bx",
+          "type": "button",
+          "x": 93,
+          "y": 10,
+          "s": 10,
+          "a": 2.1,
+          "bind": "RB",
+          "shape": "pill",
+          "label": "Grenade"
+        },
+        {
+          "id": "by",
+          "type": "button",
+          "x": 38,
+          "y": 10,
+          "s": 9,
+          "a": 2.1,
+          "bind": "BACK",
+          "shape": "pill",
+          "label": "Map"
+        },
+        {
+          "id": "bz",
+          "type": "button",
+          "x": 51,
+          "y": 10,
+          "s": 9,
+          "a": 2.1,
+          "bind": "START",
+          "shape": "pill",
+          "label": "≡"
+        },
+        {
+          "id": "b10",
+          "type": "button",
+          "x": 64,
+          "y": 10,
+          "s": 9,
+          "a": 2.1,
+          "bind": "screen:vehicle",
+          "shape": "pill",
+          "label": "Drive"
+        }
+      ]
+    },
+    {
+      "id": "vehicle",
+      "name": "Vehicle",
+      "gyro": false,
+      "controls": [
+        {
+          "id": "b11",
+          "type": "trigger",
+          "x": 93,
+          "y": 56,
+          "s": 56,
+          "a": 0.32,
+          "bind": "RT",
+          "label": "Gas",
+          "analog": true
+        },
+        {
+          "id": "b12",
+          "type": "trigger",
+          "x": 80,
+          "y": 56,
+          "s": 56,
+          "a": 0.32,
+          "bind": "LT",
+          "label": "Brake",
+          "analog": true
+        },
+        {
+          "id": "b13",
+          "type": "stick",
+          "x": 58,
+          "y": 68,
+          "s": 30,
+          "a": 1,
+          "bind": "right",
+          "floating": false,
+          "radius": 14,
+          "deadzone": 0.12,
+          "outer": 0.05,
+          "curve": 1.3,
+          "sens": 1,
+          "follow": false,
+          "label": "Look"
+        },
+        {
+          "id": "b14",
+          "type": "button",
+          "x": 58,
+          "y": 36,
+          "s": 13,
+          "a": 1,
+          "bind": "A",
+          "shape": "circle"
+        },
+        {
+          "id": "b15",
+          "type": "button",
+          "x": 44,
+          "y": 36,
+          "s": 13,
+          "a": 1,
+          "bind": "Y",
+          "shape": "circle",
+          "label": "Exit"
+        },
+        {
+          "id": "b16",
+          "type": "button",
+          "x": 44,
+          "y": 82,
+          "s": 12,
+          "a": 1,
+          "bind": "B",
+          "shape": "circle"
+        },
+        {
+          "id": "b17",
+          "type": "button",
+          "x": 50,
+          "y": 10,
+          "s": 9,
+          "a": 2.1,
+          "bind": "screen:combat",
+          "shape": "pill",
+          "label": "On foot"
+        },
+        {
+          "id": "b18",
+          "type": "button",
+          "x": 80,
+          "y": 10,
+          "s": 9,
+          "a": 2.1,
+          "bind": "RB",
+          "shape": "pill"
+        }
+      ]
+    },
+    {
+      "id": "menu",
+      "name": "Menu",
+      "gyro": false,
+      "hideCommon": true,
+      "controls": [
+        {
+          "id": "b19",
+          "type": "dpad",
+          "x": 24,
+          "y": 55,
+          "s": 62,
+          "a": 1,
+          "bind": "dpad",
+          "diagonals": true
+        },
+        {
+          "id": "b1a",
+          "type": "button",
+          "x": 76,
+          "y": 66,
+          "s": 26,
+          "a": 1,
+          "bind": "A",
+          "shape": "circle"
+        },
+        {
+          "id": "b1b",
+          "type": "button",
+          "x": 90,
+          "y": 38,
+          "s": 19,
+          "a": 1,
+          "bind": "B",
+          "shape": "circle"
+        },
+        {
+          "id": "b1c",
+          "type": "button",
+          "x": 64,
+          "y": 38,
+          "s": 15,
+          "a": 1,
+          "bind": "X",
+          "shape": "circle"
+        },
+        {
+          "id": "b1d",
+          "type": "button",
+          "x": 76,
+          "y": 18,
+          "s": 13,
+          "a": 1,
+          "bind": "Y",
+          "shape": "circle"
+        },
+        {
+          "id": "b1e",
+          "type": "button",
+          "x": 43,
+          "y": 88,
+          "s": 10,
+          "a": 2.1,
+          "bind": "LB",
+          "shape": "pill"
+        },
+        {
+          "id": "b1f",
+          "type": "button",
+          "x": 57,
+          "y": 88,
+          "s": 10,
+          "a": 2.1,
+          "bind": "RB",
+          "shape": "pill"
+        },
+        {
+          "id": "b1g",
+          "type": "button",
+          "x": 50,
+          "y": 12,
+          "s": 9,
+          "a": 2.1,
+          "bind": "START",
+          "shape": "pill",
+          "label": "≡"
+        }
+      ]
+    }
+  ],
+  "settings": {
+    "haptics": true,
+    "slide": true,
+    "showTabs": true
+  }
+}

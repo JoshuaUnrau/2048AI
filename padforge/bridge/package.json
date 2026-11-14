@@ -6,7 +6,9 @@
   "bin": { "padforge": "src/index.js" },
   "scripts": {
     "start": "node src/index.js",
-    "test": "node --test test/"
+    "test": "node --test test/*.test.js",
+    "test:e2e": "node test/e2e.js",
+    "layouts": "node scripts/make-layouts.js"
   },
   "engines": { "node": ">=18" },
   "license": "MIT",

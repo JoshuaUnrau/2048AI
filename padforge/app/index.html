@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0d0f14">
+  <title>PadForge</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="bar">
+    <span id="status" data-state="idle" title="Connection"></span>
+    <span id="latency">offline</span>
+    <div id="tabs"></div>
+    <span id="layout-name"></span>
+    <button id="btn-layouts" title="Layouts" aria-label="Layouts">☰</button>
+    <button id="btn-edit" title="Edit layout" aria-label="Edit layout">✎</button>
+    <button id="btn-full" title="Full screen" aria-label="Full screen">⛶</button>
+  </div>
+
+  <div id="stage"></div>
+  <aside id="editor" hidden></aside>
+
+  <div id="sheet" class="overlay" hidden>
+    <div class="card">
+      <div class="card-head"><strong>Layouts</strong><button id="sheet-close">Close</button></div>
+      <div id="layout-list"></div>
+      <label class="row check"><input type="checkbox" id="auto-switch" checked> <span>Switch layout automatically when a matching game is focused on the PC</span></label>
+      <p class="hint">PC output: <span id="output-info">not connected</span></p>
+    </div>
+  </div>
+
+  <div id="start" class="overlay">
+    <div class="card center">
+      <h1>PadForge</h1>
+      <p id="start-status">Not connected</p>
+      <div id="pair" hidden>
+        <p>Enter the pairing code shown by the PadForge bridge on your PC or Steam Deck.</p>
+        <input id="pair-code" inputmode="numeric" autocomplete="off" placeholder="123456">
+      </div>
+      <button id="start-btn" class="primary big">Tap to start</button>
+      <p class="hint">Hold your phone sideways. Tapping start allows motion controls and keeps the screen awake.</p>
+    </div>
+  </div>
+
+  <div id="rotate" class="overlay"><div class="card center"><p>Turn your phone sideways ↻</p></div></div>
+  <div id="toast" hidden></div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,310 @@
+{
+  "id": "keyboard-mouse",
+  "name": "Keyboard & mouse",
+  "match": [],
+  "gyro": {
+    "enabled": true,
+    "output": "mouse",
+    "mode": "hold",
+    "mouseSens": 14
+  },
+  "common": [
+    {
+      "id": "b1h",
+      "type": "stick",
+      "x": 18,
+      "y": 62,
+      "s": 72,
+      "a": 0.72,
+      "bind": "wasd",
+      "floating": true,
+      "radius": 14,
+      "deadzone": 0.2,
+      "outer": 0.05,
+      "curve": 1.3,
+      "sens": 1,
+      "follow": true,
+      "label": "WASD"
+    }
+  ],
+  "screens": [
+    {
+      "id": "main",
+      "name": "Main",
+      "controls": [
+        {
+          "id": "b1i",
+          "type": "touchpad",
+          "x": 64,
+          "y": 46,
+          "s": 66,
+          "a": 1.05,
+          "bind": "mouse",
+          "sens": 1,
+          "tap": "mouse:left",
+          "label": "Mouse"
+        },
+        {
+          "id": "b1j",
+          "type": "button",
+          "x": 92,
+          "y": 68,
+          "s": 17,
+          "a": 1,
+          "bind": "mouse:left",
+          "shape": "circle",
+          "label": "Click"
+        },
+        {
+          "id": "b1k",
+          "type": "button",
+          "x": 92,
+          "y": 42,
+          "s": 13,
+          "a": 1,
+          "bind": "mouse:right+gyro:hold",
+          "shape": "circle",
+          "label": "Aim"
+        },
+        {
+          "id": "b1l",
+          "type": "button",
+          "x": 78,
+          "y": 89,
+          "s": 10,
+          "a": 2.1,
+          "bind": "key:Space",
+          "shape": "pill",
+          "label": "Jump"
+        },
+        {
+          "id": "b1m",
+          "type": "button",
+          "x": 50,
+          "y": 89,
+          "s": 10,
+          "a": 2.1,
+          "bind": "key:ShiftLeft",
+          "shape": "pill",
+          "label": "Shift"
+        },
+        {
+          "id": "b1n",
+          "type": "button",
+          "x": 39,
+          "y": 26,
+          "s": 11,
+          "a": 1,
+          "bind": "key:KeyE",
+          "shape": "circle"
+        },
+        {
+          "id": "b1o",
+          "type": "button",
+          "x": 39,
+          "y": 45,
+          "s": 11,
+          "a": 1,
+          "bind": "key:KeyR",
+          "shape": "circle"
+        },
+        {
+          "id": "b1p",
+          "type": "button",
+          "x": 39,
+          "y": 64,
+          "s": 11,
+          "a": 1,
+          "bind": "key:ControlLeft",
+          "shape": "circle",
+          "label": "Ctrl"
+        },
+        {
+          "id": "b1q",
+          "type": "button",
+          "x": 39,
+          "y": 9,
+          "s": 8,
+          "a": 2.1,
+          "bind": "key:Tab",
+          "shape": "pill",
+          "label": "Tab"
+        },
+        {
+          "id": "b1r",
+          "type": "button",
+          "x": 92,
+          "y": 9,
+          "s": 8,
+          "a": 2.1,
+          "bind": "key:Escape",
+          "shape": "pill",
+          "label": "Esc"
+        },
+        {
+          "id": "b1s",
+          "type": "button",
+          "x": 92,
+          "y": 23,
+          "s": 10,
+          "a": 1,
+          "bind": "hold:hotbar",
+          "shape": "rect",
+          "label": "1–0"
+        }
+      ]
+    },
+    {
+      "id": "hotbar",
+      "name": "Hotbar",
+      "gyro": false,
+      "controls": [
+        {
+          "id": "b1t",
+          "type": "button",
+          "x": 46,
+          "y": 34,
+          "s": 15,
+          "a": 1,
+          "bind": "key:Digit1",
+          "shape": "rect"
+        },
+        {
+          "id": "b1u",
+          "type": "button",
+          "x": 57,
+          "y": 34,
+          "s": 15,
+          "a": 1,
+          "bind": "key:Digit2",
+          "shape": "rect"
+        },
+        {
+          "id": "b1v",
+          "type": "button",
+          "x": 68,
+          "y": 34,
+          "s": 15,
+          "a": 1,
+          "bind": "key:Digit3",
+          "shape": "rect"
+        },
+        {
+          "id": "b1w",
+          "type": "button",
+          "x": 79,
+          "y": 34,
+          "s": 15,
+          "a": 1,
+          "bind": "key:Digit4",
+          "shape": "rect"
+        },
+        {
+          "id": "b1x",
+          "type": "button",
+          "x": 90,
+          "y": 34,
+          "s": 15,
+          "a": 1,
+          "bind": "key:Digit5",
+          "shape": "rect"
+        },
+        {
+          "id": "b1y",
+          "type": "button",
+          "x": 46,
+          "y": 62,
+          "s": 15,
+          "a": 1,
+          "bind": "key:Digit6",
+          "shape": "rect"
+        },
+        {
+          "id": "b1z",
+          "type": "button",
+          "x": 57,
+          "y": 62,
+          "s": 15,
+          "a": 1,
+          "bind": "key:Digit7",
+          "shape": "rect"
+        },
+        {
+          "id": "b20",
+          "type": "button",
+          "x": 68,
+          "y": 62,
+          "s": 15,
+          "a": 1,
+          "bind": "key:Digit8",
+          "shape": "rect"
+        },
+        {
+          "id": "b21",
+          "type": "button",
+          "x": 79,
+          "y": 62,
+          "s": 15,
+          "a": 1,
+          "bind": "key:Digit9",
+          "shape": "rect"
+        },
+        {
+          "id": "b22",
+          "type": "button",
+          "x": 90,
+          "y": 62,
+          "s": 15,
+          "a": 1,
+          "bind": "key:Digit0",
+          "shape": "rect"
+        },
+        {
+          "id": "b23",
+          "type": "button",
+          "x": 46,
+          "y": 88,
+          "s": 9,
+          "a": 2.1,
+          "bind": "key:KeyQ",
+          "shape": "pill"
+        },
+        {
+          "id": "b24",
+          "type": "button",
+          "x": 60,
+          "y": 88,
+          "s": 9,
+          "a": 2.1,
+          "bind": "key:KeyF",
+          "shape": "pill"
+        },
+        {
+          "id": "b25",
+          "type": "button",
+          "x": 74,
+          "y": 88,
+          "s": 9,
+          "a": 2.1,
+          "bind": "key:KeyG",
+          "shape": "pill"
+        },
+        {
+          "id": "b26",
+          "type": "button",
+          "x": 88,
+          "y": 88,
+          "s": 9,
+          "a": 2.1,
+          "bind": "key:KeyM",
+          "shape": "pill"
+        }
+      ]
+    }
+  ],
+  "settings": {
+    "haptics": true,
+    "slide": true,
+    "showTabs": true
+  }
+}
